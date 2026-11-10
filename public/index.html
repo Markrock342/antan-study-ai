@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>อ่านทัน — ผู้ช่วยอ่านหนังสือด้วย AI</title>
+    <meta name="description" content="วางเนื้อหาที่ต้องอ่าน แล้วให้ AI ช่วยสรุป ออกข้อสอบพร้อมเฉลย และตอบคำถามจากเนื้อหาพร้อมบอกที่มา" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai+Looped:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/app.css" />
+  </head>
+  <body>
+    <a class="skip" href="#main">ข้ามไปเนื้อหา</a>
+
+    <header class="top">
+      <a class="brand" href="#/">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+          <rect width="32" height="32" rx="8" />
+          <path d="M8 9.5c3-.9 5.7-.6 8 1v13c-2.3-1.6-5-1.9-8-1v-13Zm16 0c-3-.9-5.7-.6-8 1v13c2.3-1.6 5-1.9 8-1v-13Z" />
+          <path class="hl" d="M18.5 14h4M18.5 17h3" />
+        </svg>
+        <span><strong>อ่านทัน</strong><small>ผู้ช่วยอ่านหนังสือด้วย AI</small></span>
+      </a>
+      <a class="top-link" href="#/" id="my-docs-link">เอกสารของฉัน</a>
+    </header>
+
+    <main id="main" class="page" tabindex="-1">
+      <!-- ===== หน้าแรก ===== -->
+      <section id="view-home" class="view" hidden>
+        <div class="hero">
+          <h1>วางเนื้อหาที่ต้องอ่าน<br />แล้วให้ AI ช่วยติว</h1>
+          <p class="hero-sub">สรุปประเด็นสำคัญ · ออกข้อสอบพร้อมเฉลย · ถามจากเนื้อหาพร้อมบอกที่มา</p>
+        </div>
+
+        <form class="card add" id="add-form" novalidate>
+          <h2 class="card-title">เพิ่มเนื้อหา</h2>
+
+          <div class="seg" role="tablist" aria-label="วิธีเพิ่มเนื้อหา">
+            <button type="button" role="tab" aria-selected="true" data-mode="paste">วางข้อความ</button>
+            <button type="button" role="tab" aria-selected="false" data-mode="file" tabindex="-1">อัปโหลดไฟล์</button>
+          </div>
+
+          <label class="label" for="doc-title">ชื่อเรื่อง</label>
+          <input class="input" id="doc-title" maxlength="120" placeholder="เช่น ชีววิทยา บทที่ 3 การสังเคราะห์ด้วยแสง" autocomplete="off" />
+
+          <div id="mode-paste">
+            <label class="label" for="doc-text">เนื้อหา</label>
+            <textarea class="input textarea" id="doc-text" rows="9" placeholder="วางเนื้อหาจากชีท สไลด์ หรือโน้ตที่นี่"></textarea>
+          </div>
+
+          <div id="mode-file" hidden>
+            <label class="drop" id="drop">
+              <input type="file" id="file" accept=".pdf,.txt,.md,text/plain,application/pdf" />
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4m0 0-4 4m4-4 4 4M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3" /></svg>
+              <b>เลือกไฟล์ หรือลากมาวางตรงนี้</b>
+              <span>PDF, TXT หรือ MD (PDF ต้องเป็นไฟล์ที่คัดลอกข้อความได้ ไม่ใช่ภาพสแกน)</span>
+            </label>
+            <p class="file-info" id="file-info" hidden></p>
+          </div>
+
+          <div class="add-foot">
+            <p class="counter" id="counter">0 / 60,000 ตัวอักษร</p>
+            <p class="error" id="add-error" role="alert"></p>
+          </div>
+
+          <button class="btn btn-primary btn-lg" type="submit" id="add-submit">เริ่มอ่านด้วย AI</button>
+          <button class="btn-link" type="button" id="sample">ลองด้วยเนื้อหาตัวอย่าง</button>
+        </form>
+
+        <section class="mine" aria-labelledby="mine-title">
+          <h2 id="mine-title">เอกสารของฉัน</h2>
+          <ul class="doc-list" id="doc-list"></ul>
+          <p class="muted" id="doc-list-empty">ยังไม่มีเอกสาร เพิ่มเนื้อหาด้านบนเพื่อเริ่ม</p>
+          <p class="note">เอกสารเก็บไว้ 30 วัน รายการนี้จำไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น</p>
+        </section>
+      </section>
+
+      <!-- ===== หน้าเอกสาร ===== -->
+      <section id="view-doc" class="view" hidden>
+        <a class="back" href="#/">← เอกสารทั้งหมด</a>
+        <div class="doc-head">
+          <div>
+            <h1 id="doc-name">…</h1>
+            <p class="muted" id="doc-meta"></p>
+          </div>
+          <button type="button" class="btn btn-ghost-danger" id="doc-delete">ลบเอกสาร</button>
+        </div>
+
+        <div class="tabs" role="tablist" aria-label="เครื่องมือ" id="tabs">
+          <button type="button" role="tab" data-tab="summary" aria-selected="true" id="tab-summary" aria-controls="panel-summary">สรุป</button>
+          <button type="button" role="tab" data-tab="quiz" aria-selected="false" tabindex="-1" id="tab-quiz" aria-controls="panel-quiz">แบบทดสอบ</button>
+          <button type="button" role="tab" data-tab="ask" aria-selected="false" tabindex="-1" id="tab-ask" aria-controls="panel-ask">ถามจากเนื้อหา</button>
+          <button type="button" role="tab" data-tab="source" aria-selected="false" tabindex="-1" id="tab-source" aria-controls="panel-source">เนื้อหาต้นฉบับ</button>
+        </div>
+
+        <!-- สรุป -->
+        <div class="panel" role="tabpanel" id="panel-summary" aria-labelledby="tab-summary">
+          <div id="summary-body" aria-live="polite"></div>
+        </div>
+
+        <!-- แบบทดสอบ -->
+        <div class="panel" role="tabpanel" id="panel-quiz" aria-labelledby="tab-quiz" hidden>
+          <div class="card quiz-setup" id="quiz-setup">
+            <h2 class="card-title">สร้างแบบทดสอบจากเนื้อหานี้</h2>
+            <p class="label">จำนวนข้อ</p>
+            <div class="seg" id="quiz-count" role="radiogroup" aria-label="จำนวนข้อ">
+              <button type="button" role="radio" aria-checked="false" data-value="3">3 ข้อ</button>
+              <button type="button" role="radio" aria-checked="true" data-value="5">5 ข้อ</button>
+              <button type="button" role="radio" aria-checked="false" data-value="10">10 ข้อ</button>
+            </div>
+            <p class="label">ระดับความยาก</p>
+            <div class="seg" id="quiz-level" role="radiogroup" aria-label="ระดับความยาก">
+              <button type="button" role="radio" aria-checked="false" data-value="easy">ง่าย</button>
+              <button type="button" role="radio" aria-checked="true" data-value="medium">ปานกลาง</button>
+              <button type="button" role="radio" aria-checked="false" data-value="hard">ยาก</button>
+            </div>
+            <p class="error" id="quiz-error" role="alert"></p>
+            <button type="button" class="btn btn-primary btn-lg" id="quiz-make">สร้างแบบทดสอบ</button>
+          </div>
+          <div id="quiz-run" aria-live="polite"></div>
+        </div>
+
+        <!-- ถามจากเนื้อหา -->
+        <div class="panel" role="tabpanel" id="panel-ask" aria-labelledby="tab-ask" hidden>
+          <div class="chat" id="chat" aria-live="polite"></div>
+          <form class="ask-form" id="ask-form">
+            <label class="visually-hidden" for="ask-input">คำถาม</label>
+            <textarea class="input ask-input" id="ask-input" rows="1" maxlength="500" placeholder="ถามอะไรก็ได้เกี่ยวกับเนื้อหานี้"></textarea>
+            <button type="submit" class="btn btn-primary" id="ask-send">ถาม</button>
+          </form>
+          <p class="note">AI ตอบจากเนื้อหาที่ให้มาเท่านั้น และอาจผิดพลาดได้ กดเลข [1] [2] เพื่อดูข้อความต้นฉบับ</p>
+        </div>
+
+        <!-- ต้นฉบับ -->
+        <div class="panel" role="tabpanel" id="panel-source" aria-labelledby="tab-source" hidden>
+          <article class="source" id="source"></article>
+        </div>
+      </section>
+
+      <!-- ===== ไม่พบ ===== -->
+      <section id="view-missing" class="view" hidden>
+        <div class="card center">
+          <h1>ไม่พบเอกสารนี้</h1>
+          <p class="muted">เอกสารอาจถูกลบ หรือครบ 30 วันแล้ว</p>
+          <a class="btn btn-primary" href="#/">กลับหน้าแรก</a>
+        </div>
+      </section>
+    </main>
+
+    <dialog class="dialog" id="confirm">
+      <form method="dialog">
+        <h2 id="confirm-title">ลบเอกสารนี้?</h2>
+        <p id="confirm-text">สรุป ข้อสอบ และประวัติคำถามของเอกสารนี้จะหายไปด้วย</p>
+        <div class="dialog-actions">
+          <button class="btn btn-outline" value="cancel" autofocus>ยกเลิก</button>
+          <button class="btn btn-danger" value="ok">ลบ</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
